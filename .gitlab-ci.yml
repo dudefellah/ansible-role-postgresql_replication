@@ -1,0 +1,16 @@
+---
+stages:
+  - test
+  - publish
+
+include:
+  - remote: "https://gitlab.com/dudefellah/ci-templates/-/raw/master/ansible/Molecule.gitlab-ci.yml"
+  - remote: "https://gitlab.com/dudefellah/ci-templates/-/raw/master/ansible/Galaxy.gitlab-ci.yml"
+
+molecule:
+  stage: test
+  extends: .ansible_molecule
+
+publish:
+  stage: publish
+  extends: .ansible_galaxy_publish

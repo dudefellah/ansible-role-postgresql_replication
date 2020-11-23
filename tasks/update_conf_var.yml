@@ -1,0 +1,24 @@
+---
+- name: Set value line in conf
+  lineinfile:
+    path: "{{ _pg_conf_file }}"
+    regex: |-
+      ^\s*{{ _pg_conf_name }}\s*=\s*([^#]*)(.*)
+    line: |-
+      {{ _pg_conf_name }} = {{ _pg_conf_value }}\2
+    backrefs: true
+  notify: reload postgres
+  when:
+    - "_pg_conf_value is not none"
+
+- name: Comment out value line in conf
+  lineinfile:
+    path: "{{ _pg_conf_file }}"
+    regex: |-
+      ^\s*({{ _pg_conf_name }}\s*=.*)
+    line: |-
+      #\1
+    backrefs: true
+  notify: reload postgres
+  when:
+    - "_pg_conf_value is none"

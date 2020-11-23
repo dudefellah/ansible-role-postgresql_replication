@@ -1,0 +1,5 @@
+standby_mode=on
+{% if postgresql_replication_recovery_trigger_file is not none %}
+trigger_file='{{ postgresql_replication_recovery_trigger_file }}'
+{% endif -%}
+primary_conninfo='host={{ postgresql_replication_primary_address }} port={{ postgresql_replication_primary_port }} user={{ postgresql_replication_replication_user }} application_name={{ postgresql_replication_recovery_application_name }}'

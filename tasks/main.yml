@@ -1,0 +1,48 @@
+---
+# tasks file for ansible-role-postgresql_replication
+- name: Load platform variables
+  ansible.builtin.include_vars:
+    file: "{{ lookup('first_found', vars_files, errors='ignore') }}"
+  vars:
+    vars_files:
+      files:
+        - "{{ role_path }}/vars/{{ ansible_distribution | lower }}/\
+           {{ ansible_distribution_major_version }}.yml"
+        - "{{ role_path }}/vars/{{ ansible_distribution | lower }}/main.yml"
+        - "{{ role_path }}/vars/{{ ansible_os_family | lower }}/main.yml"
+        - "{{ role_path }}/vars/main.yml"
+
+- name: Determine appropriate facts for this deployment
+  include_tasks:
+    file: role_facts.yml
+
+- name: Load platform dependencies
+  include_tasks:
+    file: "{{ tasks_filename }}"
+  vars:
+    tasks_files:
+      - "{{ role_path }}/tasks/dependencies/\
+        {{ ansible_distribution | lower }}/\
+        {{ ansible_distribution_major_version }}.yml"
+      - "{{ role_path }}/tasks/dependencies/\
+        {{ ansible_distribution | lower }}/\
+        main.yml"
+      - "{{ role_path }}/tasks/dependencies/\
+        {{ ansible_os_family | lower }}.yml"
+      - "{{ role_path }}/tasks/dependencies/main.yml"
+  loop: "{{ query('first_found', tasks_files, errors='ignore') }}"
+  loop_control:
+    loop_var: tasks_filename
+
+- name: Configure primary
+  include_tasks: configure_master.yml
+  when:
+    - "postgresql_replication_primary|bool"
+
+- name: Do initial basebackup
+  include_tasks: base_backup.yml
+  when:
+    - "not postgresql_replication_primary|bool"
+
+- name: Set PostgreSQL service status
+  include_tasks: service_status.yml

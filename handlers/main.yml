@@ -1,0 +1,21 @@
+---
+# handlers file for ansible-role-postgresql_replication
+- name: Reload postgres service (service)
+  service:
+    name: "{{ _postgresql_replication_service_name }}"
+    state: "reloaded"
+  listen: reload postgres
+  when:
+    - "postgresql_replication_reload_enabled|bool"
+    - "postgresql_replication_pg_ctl_bin_path is none"
+
+- name: Reload postgres service (pg_ctl)
+  command: "{{ postgresql_replication_pg_ctl_bin_path }} reload"
+  environment:
+    PGDATA: "{{ _postgresql_replication_data_dir }}"
+  listen: reload postgres
+  when:
+    - "postgresql_replication_reload_enabled|bool"
+    - "postgresql_replication_pg_ctl_bin_path is not none"
+  become: true
+  become_user: "{{ postgresql_replication_postgresql_user }}"

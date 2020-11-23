@@ -1,0 +1,136 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+platforms:
+  - name: postgresql-13-primary-molecule-instance
+    image: "postgres:13"
+    docker_networks:
+      - name: pg13
+        ipam_config:
+          - subnet: "10.10.13.0/24"
+    networks:
+      - name: pg13
+        ipv4_address: 10.10.13.2
+    groups:
+      - primaries
+    tmpfs:
+      - /var/lib/postgresql/data
+  - name: postgresql-12-primary-molecule-instance
+    image: "postgres:12"
+    docker_networks:
+      - name: pg12
+        ipam_config:
+          - subnet: "10.10.12.0/24"
+    networks:
+      - name: pg12
+        ipv4_address: 10.10.12.2
+    groups:
+      - primaries
+    tmpfs:
+      - /var/lib/postgresql/data
+  - name: postgresql-11-primary-molecule-instance
+    image: "postgres:11"
+    docker_networks:
+      - name: pg11
+        ipam_config:
+          - subnet: "10.10.11.0/24"
+    networks:
+      - name: pg11
+        ipv4_address: 10.10.11.2
+    groups:
+      - primaries
+    tmpfs:
+      - /var/lib/postgresql/data
+  - name: postgresql-13-replication-molecule-instance
+    image: "postgres:13"
+    docker_networks:
+      - name: pg13
+        ipam_config:
+          - subnet: "10.10.13.0/24"
+    networks:
+      - name: pg13
+        ipv4_address: 10.10.13.3
+    groups:
+      - replicas
+    tmpfs:
+      - /var/lib/postgresql/data
+  - name: postgresql-12-replication-molecule-instance
+    image: "postgres:12"
+    docker_networks:
+      - name: pg12
+        ipam_config:
+          - subnet: "10.10.12.0/24"
+    networks:
+      - name: pg12
+        ipv4_address: 10.10.12.3
+    groups:
+      - replicas
+    tmpfs:
+      - /var/lib/postgresql/data
+  - name: postgresql-11-replication-molecule-instance
+    image: "postgres:11"
+    docker_networks:
+      - name: pg11
+        ipam_config:
+          - subnet: "10.10.11.0/24"
+    networks:
+      - name: pg11
+        ipv4_address: 10.10.11.3
+    groups:
+      - replicas
+    tmpfs:
+      - /var/lib/postgresql/data
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: prepare.yml
+  inventory:
+    group_vars:
+      primaries:
+        postgresql_replication_primary: true
+        postgresql_replication_data_dir: /var/lib/postgresql/data
+        postgresql_replication_replication_user: replica
+        postgresql_replication_replication_password: replica
+        postgresql_replication_postgresql_conf_filename: /var/lib/postgresql/data/postgresql.conf
+        postgresql_replication_pg_hba_conf_filename: /var/lib/postgresql/data/pg_hba.conf
+        postgresql_replication_pg_hba_conf:
+          - type: host
+            database: replication
+            user: all
+            address: 10.0.0.0/8
+            method: trust
+      replicas:
+        postgresql_replication_primary: false
+        postgresql_replication_data_dir: /var/lib/postgresql/data
+        postgresql_replication_replication_user: replica
+        postgresql_replication_replication_password: replica
+        postgresql_replication_postgresql_conf_filename: /var/lib/postgresql/data/postgresql.conf
+        postgresql_replication_pg_hba_conf_filename: /var/lib/postgresql/data/pg_hba.conf
+    host_vars:
+      postgresql-13-primary-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/13/bin/pg_ctl
+      postgresql-12-primary-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/12/bin/pg_ctl
+        postgresql_replication_wal_keep_size: null
+        postgresql_replication_wal_keep_segments: 2
+      postgresql-11-primary-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/11/bin/pg_ctl
+        postgresql_replication_wal_keep_size: null
+        postgresql_replication_wal_keep_segments: 2
+      postgresql-13-replication-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/13/bin/pg_ctl
+        postgresql_replication_primary_address: 10.10.13.2
+      postgresql-12-replication-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/12/bin/pg_ctl
+        postgresql_replication_primary_address: 10.10.12.2
+      postgresql-11-replication-molecule-instance:
+        postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/11/bin/pg_ctl
+        postgresql_replication_primary_address: 10.10.11.2
+verifier:
+  name: testinfra

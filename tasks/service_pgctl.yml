@@ -1,0 +1,49 @@
+---
+- name: Get pids
+  pids:
+    name: postgres
+  register: pg_ps
+  when:
+    - "_pg_ctl_bin_path is not none"
+
+- name: Set postgres service status (pg_ctl - start)
+  command: "{{ _pg_ctl_bin_path }} start"
+  environment:
+    PGDATA: "{{ _pg_data_dir }}"
+  when:
+    - "_pg_ctl_bin_path is not none"
+    - >-
+      (_pg_service_state == 'started') or
+      (
+        (_pg_service_state == 'restarted') and
+        (('pids' not in pg_ps) or (pg_ps.pids|length == 0))
+      )
+    - >-
+      ('pids' not in pg_ps) or
+      (pg_ps.pids|length == 0)
+  become: true
+  become_user: "{{ _pg_user }}"
+
+- name: Set postgres service status (pg_ctl - stop)
+  command: "{{ _pg_ctl_bin_path }} stop"
+  environment:
+    PGDATA: "{{ _pg_data_dir }}"
+  when:
+    - "_pg_ctl_bin_path is not none"
+    - "_pg_service_state == 'stopped'"
+    - "'pids' in pg_ps"
+    - "pg_ps.pids|length > 0"
+  become: true
+  become_user: "{{ _pg_user }}"
+
+- name: Set postgres service status (pg_ctl - restart)
+  command: "{{ _pg_ctl_bin_path }} restart"
+  environment:
+    PGDATA: "{{ _pg_data_dir }}"
+  when:
+    - "_pg_ctl_bin_path is not none"
+    - "_pg_service_state == 'restarted'"
+    - "'pids' in pg_ps"
+    - "pg_ps.pids|length > 0"
+  become: true
+  become_user: "{{ _pg_user }}"

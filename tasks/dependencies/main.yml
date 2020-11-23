@@ -1,0 +1,11 @@
+---
+- name: Install Python psycopg2 module
+  package:
+    name:
+      - "python3-pip"
+      - "python3-psycopg2"
+    state: present
+
+- name: Install Python psutil with pip
+  pip:
+    name: "psutil>=5.7.3"

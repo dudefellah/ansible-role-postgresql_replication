@@ -1,0 +1,52 @@
+---
+- name: Prepare the postgresql.conf file
+  ansible.builtin.blockinfile:
+    path: "{{ _postgresql_replication_postgresql_conf_filename }}"
+    marker: "# {{ postgresql_replication_management_block_delim }} - {mark}"
+    block: |
+      wal_level = {{ postgresql_replication_wal_level }}
+      max_wal_senders = {{ postgresql_replication_max_wal_senders }}
+      {% if postgresql_replication_wal_keep_segments is not none %}
+      wal_keep_segments = {{ postgresql_replication_wal_keep_segments }}
+      {% endif -%}
+      {% if postgresql_replication_wal_keep_size is not none %}
+      wal_keep_size = {{ postgresql_replication_wal_keep_size }}
+      {% endif -%}
+      {% if postgresql_replication_synchronous_standby_names is not none %}
+      synchronous_standby_names = {{ postgresql_replication_synchronous_standby_names }}
+      {% endif %}
+      synchronous_commit = {{ postgresql_replication_synchronous_commit }}
+  notify: reload postgres
+  when:
+    - "postgresql_replication_primary|bool"
+    - "postgresql_replication_postgresql_conf_configure|bool"
+
+- block:
+    - name: Prepare the pg_hba.conf file
+      ansible.builtin.blockinfile:
+        create: true
+        path: "{{ _postgresql_replication_pg_hba_conf_filename }}"
+        marker: "# {{ postgresql_replication_management_block_delim }} - {mark}"
+        block: |
+          {% for pg_hba in postgresql_replication_pg_hba_conf %}
+          {{ pg_hba.type }}  {{ pg_hba.database }} {{ pg_hba.user }} {{ pg_hba.address | default('') }} {{ pg_hba.method }}
+          {% endfor %}
+      notify: reload postgres
+      when:
+        - "postgresql_replication_primary|bool"
+        - "postgresql_replication_pg_hba_conf_configure|bool"
+        - "postgresql_replication_primary|bool"
+
+    - meta: flush_handlers
+
+- name: Create replication user account
+  community.general.postgresql_user:
+    name: "{{ postgresql_replication_replication_user }}"
+    password: "{{ postgresql_replication_replication_password }}"
+    role_attr_flags: replication
+  delegate_to: "{{ inventory_hostname }}"
+  become_user: "{{ postgresql_replication_postgresql_user }}"
+  become: true
+  when:
+    - "postgresql_replication_primary|bool"
+    - "postgresql_replication_replication_user is not none"

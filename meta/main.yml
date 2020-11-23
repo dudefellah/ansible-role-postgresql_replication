@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: Dan Thomson
+  description: Configure replication on your PostreSQL servers.
+
+  license: GPL-3.0-only
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+
+  galaxy_tags:
+    - centos
+    - database
+    - ha
+    - postgres
+    - postgresql
+    - replication
+
+dependencies: []

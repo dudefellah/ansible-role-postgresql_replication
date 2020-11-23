@@ -1,0 +1,36 @@
+---
+# vars file for ansible-role-postgresql_replication
+
+__postgresql_replication_service_name:
+  centos:
+    _value: "postgresql"
+  debian:
+    _value: "postgresql"
+
+__postgresql_replication_postgresql_conf_filename:
+  debian:
+    "9":
+      "_value": "/etc/postgresql/9.6/main/postgresql.conf"
+    "10":
+      "_value": "/etc/postgresql/11/main/postgresql.conf"
+  centos:
+    "_value": "/var/lib/pgsql/data/postgresql.conf"
+
+__postgresql_replication_pg_hba_conf_filename:
+  debian:
+    "9":
+      "_value": "/etc/postgresql/9.6/main/postgresql.conf"
+    "10":
+      "_value": "/etc/postgresql/11/main/postgresql.conf"
+  centos:
+    "_value": "/var/lib/pgsql/data"
+
+
+__postgresql_replication_data_dir:
+  debian:
+    "9":
+      "_value": "/var/lib/postgresql/9.6/main"
+    "10":
+      "_value": "/var/lib/postgresql/11/main"
+  centos:
+    "_value": "/var/lib/pgsql/data"

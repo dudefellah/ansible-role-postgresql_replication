@@ -1,0 +1,66 @@
+---
+# TODO: Fix replication primary address
+- name: Determine the appropriate PostgreSQL service name
+  set_fact:
+    _postgresql_replication_service_name: |-
+      {%- if postgresql_replication_service_name is not none -%}
+        {{ postgresql_replication_service_name }}
+      {%- elif (
+           (ansible_distribution|lower in __postgresql_replication_service_name) and
+           (ansible_distribution_major_version|string in __postgresql_replication_service_name[ansible_distribution|lower])
+      ) -%}
+         {{ __postgresql_replication_service_name[ansible_distribution|lower][ansible_distribution_major_version|string]['_value'] }}
+      {%- elif (ansible_distribution|lower in __postgresql_replication_service_name) -%}
+         {{ __postgresql_replication_service_name[ansible_distribution|lower]['_value'] }}
+      {%- else -%}
+        {{ none }}
+      {%- endif -%}
+
+- name: Determine the most appropriate postgresql.conf name
+  set_fact:
+    _postgresql_replication_postgresql_conf_filename: |-
+      {%- if postgresql_replication_postgresql_conf_filename is not none -%}
+        {{ postgresql_replication_postgresql_conf_filename }}
+      {%- elif (
+           (ansible_distribution|lower in __postgresql_replication_postgresql_conf_filename) and
+           (ansible_distribution_major_version|string in __postgresql_replication_postgresql_conf_filename[ansible_distribution|lower])
+      ) -%}
+         {{ __postgresql_replication_postgresql_conf_filename[ansible_distribution|lower][ansible_distribution_major_version|string]['_value'] }}
+      {%- elif (ansible_distribution|lower in __postgresql_replication_postgresql_conf_filename) -%}
+         {{ __postgresql_replication_postgresql_conf_filename[ansible_distribution|lower]['_value'] }}
+      {%- else -%}
+        {{ none }}
+      {%- endif -%}
+
+- name: Determine the most appropriate pg_hba.conf name
+  set_fact:
+    _postgresql_replication_pg_hba_conf_filename: >-
+      {%- if postgresql_replication_pg_hba_conf_filename is not none -%}
+        {{ postgresql_replication_pg_hba_conf_filename }}
+      {%- elif (
+           (ansible_distribution|lower in __postgresql_replication_pg_hba_conf_filename) and
+           (ansible_distribution_major_version|string in __postgresql_replication_pg_hba_conf_filename[ansible_distribution|lower])
+      ) -%}
+         {{ __postgresql_replication_pg_hba_conf_filename[ansible_distribution|lower][ansible_distribution_major_version|string]['_value'] }}
+      {%- elif (ansible_distribution|lower in __postgresql_replication_pg_hba_conf_filename) -%}
+         {{ __postgresql_replication_pg_hba_conf_filename[ansible_distribution|lower]['_value'] }}
+      {%- else -%}
+        {{ none }}
+      {%- endif -%}
+
+
+- name: Determine the most appropriate postgres data dir path
+  set_fact:
+    _postgresql_replication_data_dir: >-
+      {%- if postgresql_replication_data_dir is not none -%}
+        {{ postgresql_replication_data_dir }}
+      {%- elif (
+           (ansible_distribution|lower in __postgresql_replication_data_dir) and
+           (ansible_distribution_major_version|string in __postgresql_replication_data_dir[ansible_distribution|lower])
+      ) -%}
+         {{ __postgresql_replication_data_dir[ansible_distribution|lower][ansible_distribution_major_version|string]['_value'] }}
+      {%- elif (ansible_distribution|lower in __postgresql_replication_data_dir) -%}
+         {{ __postgresql_replication_data_dir[ansible_distribution|lower]['_value'] }}
+      {%- else -%}
+        {{ none }}
+      {%- endif -%}

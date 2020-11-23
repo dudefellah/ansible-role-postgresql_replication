@@ -1,0 +1,146 @@
+---
+# defaults file for ansible-role-postgresql_replication
+#
+# Set this value to `true` for primary hosts. Replicas will have this value
+# set to `false`.
+postgresql_replication_primary: false
+
+# On some systems (eg. Docker containers), it may not be possible to rely
+# on a service reload through Ansible in order to have config changes take
+# effect. If that's the case, you can use this value to point this role to
+# the location of pg_ctl to affect the main postgresql process.
+#
+# If this value is set, its use will be preferred over using a service
+# command.
+postgresql_replication_pg_ctl_bin_path: null
+
+# Set the address of the replication primary.
+# If set to null, the address of the first primary found in the same host
+# group will be used.
+postgresql_replication_primary_address: null
+
+# Set the port for the replication primary
+postgresql_replication_primary_port: 5432
+
+# For now, we access postgres through the local postgres user account, so
+# the appropriate account name should be set here.
+postgresql_replication_postgresql_user: postgres
+
+# This is the database user to use for replication.
+# Set this to null to avoid having a user added to the database.
+postgresql_replication_replication_user: replication
+
+# This is the database user password to use for replication.
+postgresql_replication_replication_password: replication
+
+# The name of the replication database to use
+postgresql_replication_database: replication
+
+# The postgresql data directory
+postgresql_replication_data_dir: null
+
+# Set this to explicitly inform this role of the name of the postgres service
+# to use. This will impact what gets reloaded when configurations change.
+#
+# A null value leads to this role trying to guess what the most appropriate
+# service name is, but it's not too clever.
+postgresql_replication_service_name: null
+
+# Postgresql service state to set at the end of this role. Set it to null
+# if you would like to avoid managing the service.
+postgresql_replication_service_state: started
+
+# Postgresql service enable
+postgresql_replication_service_enabled: true
+
+# Set this to `false` to prevent automatic reload of the PostgreSQL service
+# when configurations have changed.
+postgresql_replication_reload_enabled: true
+
+# postgresql.conf file location (eg. /etc/postgresql/10/main/postgresql.conf)
+# The default for this value will vary depending on platform. Set this to
+# an explicit value to use that value. Otherwise, this role will try to figure
+# out what the most likely configuration path is.
+postgresql_replication_postgresql_conf_filename: null
+
+# Set this to false in order to skip having this role attempt to create/update
+# your postgresql.conf file. It will be assumed that you've configured this
+# file already and that nothing needs doing at this point.
+postgresql_replication_postgresql_conf_configure: true
+
+# pg_hba.conf file location (eg. /etc/postgresql/10/main/pg_hba.conf)
+# The default for this value will vary depending on platform. Set this to
+# an explicit value to use that value. Otherwise, this role will try to figure
+# out what the most likely configuration path is.
+postgresql_replication_pg_hba_conf_filename: null
+
+# Set this to false in order to skip having this role attempt to create/update
+# your pg_hba.conf file. It will be assumed that you've configured this
+# file already and that nothing needs doing at this point.
+postgresql_replication_pg_hba_conf_configure: true
+
+# Custom pg_hba entries to add to the host's pg_hba.conf
+postgresql_replication_pg_hba_conf: []
+
+# When updating your postgresql configuration files, this line will by used
+# by blockinfile to delineate sections that are updated by this role. You can
+# probably leave it, but you're free to customize it to somehing that makes
+# more sense to you.
+postgresql_replication_management_block_delim: |-
+  Managed By Ansible dudefellah.postgresql_replication role
+
+# Custom pg_hba entries to add for this replication role.
+# There's nothing really replication-specific about how this is handled, but
+# it's here for convenience. You'll really just get your pg_hba enties added
+# to your pg_hba.conf file no matter what you put in. This list should contain
+# dicts with the following keys:
+#   type:
+#   database:
+#   user:
+#   address (can be ommitted - will default to a blank string):
+#   method:
+postgresql_replication_pg_hba: []
+
+# The remaining values are only relevant if
+# `postgresql_replication_postgresql_conf_configure` is set to `true`.
+# Otherwise, the configuration will not be touched and it will be assumed that
+# the appropriate values have been set elsewhere.
+#
+# Write-Ahead Log level
+# Valid values are replica, minimal and logical
+postgresql_replication_wal_level: replica
+
+# Write-Ahead Log connection limit.
+postgresql_replication_max_wal_senders: 10
+
+# Write-Ahead Log - minimum number of past log file segments kept in the
+# pg_xlog directory
+postgresql_replication_wal_keep_segments: null
+
+# Write-Ahead Log size - replaces wal_keep_segments. Set
+# `postgresql_replication_wal_keep_segments` to null and set this value
+# instead on more recent postgresql versions
+postgresql_replication_wal_keep_size: 32MB
+
+# The list of standby servers that can support synchronous replication
+postgresql_replication_synchronous_standby_names: null
+
+# Specifies how much WAL processing must complete before the database server
+# returns a “success” indication to the client.
+#
+# Valid values are remote_apply, on (the default), remote_write, local, and
+# off.
+postgresql_replication_synchronous_commit: "on"
+
+# Set to true to allow read-only queries on replicas
+postgresql_replication_hot_standby: true
+
+# Set this to true to use recovery.conf instead of a standby.signal file
+postgresql_replication_recovery_conf_enabled: false
+
+# Trigger file for standby (see "trigger_file":
+# https://www.postgresql.org/docs/11/standby-settings.html)
+postgresql_replication_recovery_trigger_file: /tmp/pg-trigger
+
+# Application name to use on the standby node
+postgresql_replication_recovery_application_name: replica

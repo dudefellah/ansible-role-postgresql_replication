@@ -1,0 +1,49 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Update package cache
+      package:
+        update_cache: true
+
+    - name: Install Python setuptools on primaries
+      ansible.builtin.package:
+        name:
+          - "python3-setuptools"
+          - "python3-pip"
+      when:
+        - "'primary' in inventory_hostname"
+
+    - name: Install psutil
+      ansible.builtin.pip:
+        name: psutil
+        state: present
+      when:
+        - "'primary' in inventory_hostname"
+
+    - name: Get PG processes
+      community.general.pids:
+        name: postgres
+      register: pg
+      when:
+        - "'primary' in inventory_hostname"
+
+    - name: Fix ownership on data dir
+      file:
+        path: "/var/lib/postgresql/data"
+        owner: postgres
+        group: postgres
+        mode: "0750"
+
+    - name: Start primaries
+      shell: /docker-entrypoint.sh postgres 2>&1 &
+      environment:
+        PGDATA: /var/lib/postgresql/data
+        POSTGRES_DB: testdb
+        POSTGRES_PASSWORD: testpassword
+        LANG: en_US.utf8
+      when:
+        - "'primary' in inventory_hostname"
+        - >-
+          ('pids' not in pg) or
+          (pg.pids|length == 0)

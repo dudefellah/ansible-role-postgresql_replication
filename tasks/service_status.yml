@@ -1,0 +1,17 @@
+---
+- name: Set postgres service status (service)
+  service:
+    name: "{{ _postgresql_replication_service_name }}"
+    state: "{{ postgresql_replication_service_state }}"
+    enabled: "{{ postgresql_replication_service_enabled }}"
+  when:
+    - "postgresql_replication_service_state is not none"
+    - "postgresql_replication_pg_ctl_bin_path is none"
+
+- name: Use pgctl to manage PostgreSQL
+  include_tasks: service_pgctl.yml
+  vars:
+    _pg_data_dir: "{{ _postgresql_replication_data_dir }}"
+    _pg_ctl_bin_path: "{{ postgresql_replication_pg_ctl_bin_path }}"
+    _pg_service_state: "{{ postgresql_replication_service_state }}"
+    _pg_user: "{{ postgresql_replication_postgresql_user }}"
