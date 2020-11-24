@@ -1,0 +1,80 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+platforms:
+  - name: postgresql-molecule-centos-8-primary-instance
+    image: "centos:centos8"
+    pre_build_image: true
+    privileged: true
+    docker_networks:
+      - name: pg
+        ipam_config:
+          - subnet: "10.10.1.0/24"
+    networks:
+      - name: pg
+        ipv4_address: 10.10.1.2
+    tmpfs:
+     - /run
+     - /tmp
+    volumes:
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - pg
+    command: /usr/sbin/init
+  - name: postgresql-molecule-centos-8-replica-instance
+    image: "centos:centos8"
+    pre_build_image: true
+    privileged: true
+    docker_networks:
+      - name: pg
+        ipam_config:
+          - subnet: "10.10.1.0/24"
+    networks:
+      - name: pg
+        ipv4_address: 10.10.1.3
+    tmpfs:
+     - /run
+     - /tmp
+    volumes:
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - pg
+    command: /usr/sbin/init
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: prepare.yml
+  inventory:
+    group_vars:
+      pg:
+        postgresql_replication_data_dir: /var/lib/pgsql/data
+        postgresql_replication_postgresql_conf_filename: /var/lib/pgsql/data/postgresql.conf
+        postgresql_replication_pg_hba_conf_filename: /var/lib/pgsql/data/pg_hba.conf
+        postgresql_replication_replication_user: replica
+        postgresql_replication_replication_password: replica
+        postgresql_replication_wal_keep_segments: 2
+        postgresql_replication_wal_keep_size: null
+        postgresql_replication_pg_hba_conf:
+          - type: host
+            database: replication
+            user: replica
+            address: 10.0.0.0/8
+            method: md5
+    host_vars:
+      postgresql-molecule-centos-8-primary-instance:
+        postgresql_replication_primary: true
+      postgresql-molecule-centos-8-replica-instance:
+        postgresql_replication_primary: false
+        postgresql_replication_primary_address: 10.10.1.2
+        postgresql_replication_primary_conninfo: "host=10.10.1.2 port=5432 user=replica options='-c wal_sender_timeout=5000'"
+        postgresql_replication_recovery_conf_enabled: true
+verifier:
+  name: testinfra
+  options:
+    s: true

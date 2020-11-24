@@ -1,18 +1,37 @@
 ---
+- name: Store the looked up var in a local fact
+  set_fact:
+    _pg_conf_value: >-
+      {{ lookup(
+           'vars',
+           ('postgresql_replication_' + _pg_conf_name),
+           default=None
+         ) }}
+
 - name: Set value line in conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ _pg_conf_file }}"
-    regex: |-
-      ^\s*{{ _pg_conf_name }}\s*=\s*([^#]*)(.*)
+    regexp: >-
+      ^\s*#?{{ _pg_conf_name }}\s*=.*
     line: |-
-      {{ _pg_conf_name }} = {{ _pg_conf_value }}\2
-    backrefs: true
+      {{ _pg_conf_name }} = {% if _pg_conf_value is sameas true -%}
+        yes
+      {%- elif _pg_conf_value is sameas false -%}
+        no
+      {%- elif (' ' in _pg_conf_value) or ('/' in _pg_conf_value) -%}
+        '{{ _pg_conf_value }}'
+      {%- else -%}
+        {{ _pg_conf_value }}
+      {%- endif -%}
+    state: present
+    insertafter: EOF
   notify: reload postgres
   when:
     - "_pg_conf_value is not none"
+    - "_pg_conf_value|string|length != 0"
 
 - name: Comment out value line in conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ _pg_conf_file }}"
     regex: |-
       ^\s*({{ _pg_conf_name }}\s*=.*)
@@ -21,4 +40,6 @@
     backrefs: true
   notify: reload postgres
   when:
-    - "_pg_conf_value is none"
+    - >-
+      (_pg_conf_value is none) or
+      (_pg_conf_value|string|length == 0)

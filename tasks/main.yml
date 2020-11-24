@@ -35,12 +35,12 @@
     loop_var: tasks_filename
 
 - name: Configure primary
-  include_tasks: configure_master.yml
+  include_tasks: configure_primary.yml
   when:
     - "postgresql_replication_primary|bool"
 
 - name: Do initial basebackup
-  include_tasks: base_backup.yml
+  include_tasks: configure_replicas.yml
   when:
     - "not postgresql_replication_primary|bool"
 

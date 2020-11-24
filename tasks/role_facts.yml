@@ -1,5 +1,16 @@
 ---
 # TODO: Fix replication primary address
+- name: >-
+    Make sure that the postgres user exists so that we don't accidentally
+    create them
+  command: "getent passwd {{ postgresql_replication_postgresql_user }}"
+  changed_when: false
+
+- name: Get the postgres user details
+  user:
+    name: "{{ postgresql_replication_postgresql_user }}"
+  register: _pg_user
+
 - name: Determine the appropriate PostgreSQL service name
   set_fact:
     _postgresql_replication_service_name: |-
@@ -63,4 +74,13 @@
          {{ __postgresql_replication_data_dir[ansible_distribution|lower]['_value'] }}
       {%- else -%}
         {{ none }}
+      {%- endif -%}
+
+- name: Set the appropriate .pgpass file location
+  set_fact:
+    _postgresql_replication_pgpass_filename: >-
+      {%- if postgresql_replication_pgpass_filename is not none -%}
+        {{ postgresql_replication_pgpass_filename }}
+      {%- else -%}
+        {{ _pg_user.home + '/.pgpass' }}
       {%- endif -%}

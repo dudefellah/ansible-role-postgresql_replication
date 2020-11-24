@@ -1,0 +1,117 @@
+---
+- name: Dest data dir on the replica node(s) to see if it's empty
+  ansible.builtin.find:
+    path: "{{ _postgresql_replication_data_dir }}"
+  register: data_dir_find
+  when:
+    - "not postgresql_replication_primary|bool"
+
+# - name: Get replication on the master
+#   community.general.postgresql_query:
+#     db: "{{ postgresql_replication_database }}"
+#     query: "SELECT * FROM pg_stat_replication WHERE client_addr"
+
+- name: Exit with an error if a primary hasn't been specified for streaming
+  fail:
+    msg: "No replication primary specified"
+  when:
+    - "postgresql_replication_primary_address is none"
+
+- name: Retrieve pg user information
+  user:
+    name: "{{ postgresql_replication_postgresql_user }}"
+  register: pg_user
+
+- debug:
+    msg: "PGPASS FILE: {{ _postgresql_replication_pgpass_filename }}"
+
+- name: Create .pgpass file if it doesn't exist
+  file:
+    path: "{{ _postgresql_replication_pgpass_filename }}"
+    mode: "0600"
+    owner: "{{ postgresql_replication_postgresql_user }}"
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+
+#         '*:' +
+- name: Write to pgpass file
+  lineinfile:
+    line: >-
+      {{ (postgresql_replication_primary_address)|string + ':' +
+         (
+           postgresql_replication_primary_port |
+           default('5432')
+         )|string + ':' +
+         '*:' +
+         (postgresql_replication_replication_user)|string + ':' +
+         (postgresql_replication_replication_password)|string }}
+    path: "{{ _postgresql_replication_pgpass_filename }}"
+    mode: "0600"
+  changed_when: false
+
+- name: Do initial basebackup
+  command: >-
+    pg_basebackup -X fetch -D {{ _postgresql_replication_data_dir }}
+      -h {{ postgresql_replication_primary_address }}
+      -U {{ postgresql_replication_replication_user }}
+      -w
+  environment:
+    PGPASSFILE: "{{ _postgresql_replication_pgpass_filename }}"
+  become: true
+  become_user: "{{ postgresql_replication_postgresql_user }}"
+  when:
+    - "data_dir_find.files|length == 0"
+
+- name: Set recovery.conf
+  template:
+    src: recovery.conf.j2
+    dest: "{{ postgresql_replication_data_dir }}/recovery.conf"
+    owner: "{{ postgresql_replication_postgresql_user }}"
+    mode: "0644"
+  notify: reload postgres
+  when:
+    - "postgresql_replication_recovery_conf_enabled|bool"
+
+- name: Remove recovery.conf
+  file:
+    path: "{{ postgresql_replication_data_dir }}/recovery.conf"
+    state: absent
+  notify: reload postgres
+  when:
+    - "not postgresql_replication_recovery_conf_enabled|bool"
+
+- name: Set standby.signal file
+  file:
+    path: "{{ postgresql_replication_data_dir }}/standby.signal"
+    owner: "{{ postgresql_replication_postgresql_user }}"
+    mode: "0640"
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+  when:
+    - "not postgresql_replication_recovery_conf_enabled|bool"
+
+- name: Set replica postgresq.conf value
+  include_tasks: update_conf_var.yml
+  vars:
+    _pg_conf_file: "{{ _postgresql_replication_postgresql_conf_filename }}"
+    _pg_conf_name: "{{ conf_name }}"
+  loop:
+    - primary_slot_name
+    - hot_standby
+    - max_standby_archive_delay
+    - max_standby_streaming_delay
+    - max_receiver_create_temp_slot
+    - wal_receiver_status_interval
+    - hot_standby_feedback
+    - wal_receiver_timeout
+    - wal_retrieve_retry_interval
+    - recovery_min_apply_delay
+    - max_standby_archive_delay
+    - max_sync_workers_per_subscription
+  loop_control:
+    loop_var: conf_name
+  when:
+    - "not postgresql_replication_primary|bool"
+    - "postgresql_replication_postgresql_conf_configure|bool"

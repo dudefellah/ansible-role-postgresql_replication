@@ -87,7 +87,7 @@ postgresql_replication_pg_hba_conf: []
 # probably leave it, but you're free to customize it to somehing that makes
 # more sense to you.
 postgresql_replication_management_block_delim: |-
-  Managed By Ansible dudefellah.postgresql_replication role
+  Managed By Ansible dudefellah.postgresql_replication role - {mark}
 
 # Custom pg_hba entries to add for this replication role.
 # There's nothing really replication-specific about how this is handled, but
@@ -101,6 +101,11 @@ postgresql_replication_management_block_delim: |-
 #   method:
 postgresql_replication_pg_hba: []
 
+# Destination location of the .pgpass file used for authenticating replication.
+# You can leave this null to use the `postgresql_user`'s home directory
+# to place your .pgpass. Otherwise, set it here.
+postgresql_replication_pgpass_filename: null
+
 # The remaining values are only relevant if
 # `postgresql_replication_postgresql_conf_configure` is set to `true`.
 # Otherwise, the configuration will not be touched and it will be assumed that
@@ -109,6 +114,58 @@ postgresql_replication_pg_hba: []
 # Write-Ahead Log level
 # Valid values are replica, minimal and logical
 postgresql_replication_wal_level: replica
+
+# max_replication_slots value
+postgresql_replication_max_replication_slots: null
+
+# max_slot_wal_keep_size
+postgresql_replication_max_slot_wal_keep_size: null
+
+# wal_sender_timeout
+postgresql_replication_wal_sender_timeout: null
+
+# track_commit_timestamp
+postgresql_replication_track_commit_timestamp: null
+
+# vacuum_defer_cleanup_age
+postgresql_replication_vacuum_defer_cleanup_age: null
+
+# primary_slot_name
+postgresql_replication_primary_slot_name: null
+
+# Trigger file for standby (see "trigger_file":
+# https://www.postgresql.org/docs/11/standby-settings.html)
+postgresql_replication_promote_trigger_file: /tmp/pg-trigger
+
+# max_standby_archive_delay
+postgresql_replication_max_standby_archive_delay: null
+
+# max_standby_archive_delay
+postgresql_replication_max_standby_streaming_delay: null
+
+# max_receiver_create_temp_slot
+postgresql_replication_max_receiver_create_temp_slot: null
+
+# wal_receiver_status_interval
+postgresql_replication_wal_receiver_status_interval: null
+
+#hot_standby_feedback
+postgresql_replication_hot_standby_feedback: null
+
+# wal_receiver_timeout
+postgresql_replication_wal_receiver_timeout: null
+
+# wal_retrieve_retry_interval
+postgresql_replication_wal_retrieve_retry_interval: null
+
+# recovery_min_apply_delay
+postgresql_replication_recovery_min_apply_delay: null
+
+# max_sync_workers_per_subscription
+postgresql_replication_max_sync_workers_per_subscription: null
+
+# hot_standby
+postgresql_replication_hot_standby: true
 
 # Write-Ahead Log connection limit.
 postgresql_replication_max_wal_senders: 10
@@ -132,15 +189,8 @@ postgresql_replication_synchronous_standby_names: null
 # off.
 postgresql_replication_synchronous_commit: "on"
 
-# Set to true to allow read-only queries on replicas
-postgresql_replication_hot_standby: true
-
 # Set this to true to use recovery.conf instead of a standby.signal file
 postgresql_replication_recovery_conf_enabled: false
-
-# Trigger file for standby (see "trigger_file":
-# https://www.postgresql.org/docs/11/standby-settings.html)
-postgresql_replication_recovery_trigger_file: /tmp/pg-trigger
 
 # Application name to use on the standby node
 postgresql_replication_recovery_application_name: replica

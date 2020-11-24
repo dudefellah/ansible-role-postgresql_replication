@@ -1,21 +1,47 @@
 ---
+#      {% if postgresql_replication_synchronous_commit is not none %}
+#      synchronous_commit = {{ postgresql_replication_synchronous_commit }}
+#      {% endif %}
+
 - name: Prepare the postgresql.conf file
   ansible.builtin.blockinfile:
     path: "{{ _postgresql_replication_postgresql_conf_filename }}"
     marker: "# {{ postgresql_replication_management_block_delim }} - {mark}"
     block: |
       wal_level = {{ postgresql_replication_wal_level }}
+      {% if postgresql_replication_max_wal_senders is not none %}
       max_wal_senders = {{ postgresql_replication_max_wal_senders }}
+      {% endif -%}
+      {% if postgresql_replication_max_replication_slots is not none %}
+      max_replication_slots = {{ postgresql_replication_max_replication_slots }}
+      {% endif -%}
       {% if postgresql_replication_wal_keep_segments is not none %}
       wal_keep_segments = {{ postgresql_replication_wal_keep_segments }}
       {% endif -%}
       {% if postgresql_replication_wal_keep_size is not none %}
       wal_keep_size = {{ postgresql_replication_wal_keep_size }}
       {% endif -%}
-      {% if postgresql_replication_synchronous_standby_names is not none %}
-      synchronous_standby_names = {{ postgresql_replication_synchronous_standby_names }}
+      {% if postgresql_replication_max_slot_wal_keep_size is not none %}
+      max_slot_wal_keep_size = {{ postgresql_replication_max_slot_wal_keep_size }}
       {% endif %}
-      synchronous_commit = {{ postgresql_replication_synchronous_commit }}
+      {% if postgresql_replication_wal_sender_timeout is not none %}
+      wal_sender_timeout = {{ postgresql_replication_wal_sender_timeout }}
+      {% endif %}
+      {% if postgresql_replication_track_commit_timestamp %}
+      track_commit_timestamp = {{ postgresql_replication_track_commit_timestamp }}
+      {% endif %}
+      {% if postgresql_replication_synchronous_standby_names is not none %}
+      {# for convenience #}
+      {%- set _pr = postgresql_replication_synchronous_standby_names -%}
+      synchronous_standby_names = {% if ('first' in _pr) and _pr.first -%}
+        FIRST {{ _pr.first.num_sync }} ({{ _pr.first.standby_names | join(', ') }})
+      {%- endif -%}
+      {% if ('any' in _pr) and _pr.any -%}ANY {{ _pr.any.num_sync }} ({{ _pr.any.standby_names | join(', ') }}){% endif -%}
+      {% if 'standby_names' in _pr %} {{ _pr.standby_names | join(', ') }}{% endif -%}
+      {% endif %}
+      {% if postgresql_replication_vacuum_defer_cleanup_age is not none %}
+      vacuum_defer_cleanup_age = {{ postgresql_replication_vacuum_defer_cleanup_age }}
+      {% endif %}
   notify: reload postgres
   when:
     - "postgresql_replication_primary|bool"

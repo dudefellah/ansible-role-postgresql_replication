@@ -1,0 +1,39 @@
+---
+- name: Prepare
+  hosts: all
+  handlers:
+    - name: Restart postgres
+      service:
+        name: postgresql
+        state: restarted
+      listen: restart postgres
+  tasks:
+    - name: Install some required packages
+      package:
+        name:
+          - glibc-langpack-en
+          - postgresql-server
+          - sudo
+        state: present
+
+    - name: Get files in data dir
+      find:
+        path: /var/lib/pgsql/data
+      register: data_files
+
+    - name: Setup the database
+      command: /usr/bin/postgresql-setup initdb
+      register: initdb
+      when:
+        - "postgresql_replication_primary|bool"
+        - "data_files.files|length == 0"
+
+    - name: Set listen address
+      lineinfile:
+        path: /var/lib/pgsql/data/postgresql.conf
+        regex: "^#listen_addresses.*"
+        line: "listen_addresses = '*'"
+      notify: restart postgres
+      when:
+        - "postgresql_replication_primary|bool"
+        - "initdb.changed|bool"
