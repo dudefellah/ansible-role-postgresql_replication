@@ -33,9 +33,6 @@ postgresql_replication_replication_user: replication
 # This is the database user password to use for replication.
 postgresql_replication_replication_password: replication
 
-# The name of the replication database to use
-postgresql_replication_database: replication
-
 # The postgresql data directory
 postgresql_replication_data_dir: null
 
@@ -189,7 +186,8 @@ postgresql_replication_synchronous_standby_names: null
 # off.
 postgresql_replication_synchronous_commit: "on"
 
-# Set this to true to use recovery.conf instead of a standby.signal file
+# Set this to true to use recovery.conf instead of a standby.signal +
+# postgresql.conf.auto file
 postgresql_replication_recovery_conf_enabled: false
 
 # Application name to use on the standby node

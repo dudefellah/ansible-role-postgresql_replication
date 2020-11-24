@@ -115,22 +115,28 @@ provisioner:
     host_vars:
       postgresql-13-primary-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/13/bin/pg_ctl
+        postgresql_replication_recovery_conf_enabled: false
       postgresql-12-primary-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/12/bin/pg_ctl
         postgresql_replication_wal_keep_size: null
         postgresql_replication_wal_keep_segments: 2
+        postgresql_replication_recovery_conf_enabled: false
       postgresql-11-primary-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/11/bin/pg_ctl
         postgresql_replication_wal_keep_size: null
         postgresql_replication_wal_keep_segments: 2
+        postgresql_replication_recovery_conf_enabled: true
       postgresql-13-replication-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/13/bin/pg_ctl
         postgresql_replication_primary_address: 10.10.13.2
+        postgresql_replication_recovery_conf_enabled: false
       postgresql-12-replication-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/12/bin/pg_ctl
         postgresql_replication_primary_address: 10.10.12.2
+        postgresql_replication_recovery_conf_enabled: false
       postgresql-11-replication-molecule-instance:
         postgresql_replication_pg_ctl_bin_path: /usr/lib/postgresql/11/bin/pg_ctl
         postgresql_replication_primary_address: 10.10.11.2
+        postgresql_replication_recovery_conf_enabled: true
 verifier:
   name: testinfra

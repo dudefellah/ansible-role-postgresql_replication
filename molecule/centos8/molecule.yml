@@ -72,9 +72,6 @@ provisioner:
       postgresql-molecule-centos-8-replica-instance:
         postgresql_replication_primary: false
         postgresql_replication_primary_address: 10.10.1.2
-        postgresql_replication_primary_conninfo: "host=10.10.1.2 port=5432 user=replica options='-c wal_sender_timeout=5000'"
         postgresql_replication_recovery_conf_enabled: true
 verifier:
   name: testinfra
-  options:
-    s: true

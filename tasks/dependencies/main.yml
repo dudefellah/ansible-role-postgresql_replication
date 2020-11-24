@@ -2,6 +2,7 @@
 - name: Install Python psycopg2 module
   package:
     name:
+      - "gcc"
       - "python3-pip"
       - "python3-psycopg2"
     state: present

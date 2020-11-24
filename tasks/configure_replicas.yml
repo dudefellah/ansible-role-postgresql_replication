@@ -8,7 +8,6 @@
 
 # - name: Get replication on the master
 #   community.general.postgresql_query:
-#     db: "{{ postgresql_replication_database }}"
 #     query: "SELECT * FROM pg_stat_replication WHERE client_addr"
 
 - name: Exit with an error if a primary hasn't been specified for streaming
@@ -21,9 +20,6 @@
   user:
     name: "{{ postgresql_replication_postgresql_user }}"
   register: pg_user
-
-- debug:
-    msg: "PGPASS FILE: {{ _postgresql_replication_pgpass_filename }}"
 
 - name: Create .pgpass file if it doesn't exist
   file:
@@ -55,7 +51,7 @@
     pg_basebackup -X fetch -D {{ _postgresql_replication_data_dir }}
       -h {{ postgresql_replication_primary_address }}
       -U {{ postgresql_replication_replication_user }}
-      -w
+      -R -w
   environment:
     PGPASSFILE: "{{ _postgresql_replication_pgpass_filename }}"
   become: true
