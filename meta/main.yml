@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  role_name: postgresql_replication
   author: Dan Thomson
   description: Configure replication on your PostreSQL servers.
 
