@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies
-  package:
+  ansible.builtin.package:
     name:
       - "gcc"
       - "python3-dev"
@@ -9,5 +9,5 @@
     state: present
 
 - name: Install Python psutil with pip
-  pip:
+  ansible.builtin.pip:
     name: "psutil>=5.7.3"

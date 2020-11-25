@@ -1,6 +1,6 @@
 ---
 - name: Store the looked up var in a local fact
-  set_fact:
+  ansible.builtin.set_fact:
     _pg_conf_value: >-
       {{ lookup(
            'vars',

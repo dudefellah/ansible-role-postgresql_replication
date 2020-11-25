@@ -7,12 +7,12 @@
   changed_when: false
 
 - name: Get the postgres user details
-  user:
+  ansible.builtin.user:
     name: "{{ postgresql_replication_postgresql_user }}"
   register: _pg_user
 
 - name: Determine the appropriate PostgreSQL service name
-  set_fact:
+  ansible.builtin.set_fact:
     _postgresql_replication_service_name: |-
       {%- if postgresql_replication_service_name is not none -%}
         {{ postgresql_replication_service_name }}
@@ -28,7 +28,7 @@
       {%- endif -%}
 
 - name: Determine the most appropriate postgresql.conf name
-  set_fact:
+  ansible.builtin.set_fact:
     _postgresql_replication_postgresql_conf_filename: |-
       {%- if postgresql_replication_postgresql_conf_filename is not none -%}
         {{ postgresql_replication_postgresql_conf_filename }}
@@ -44,7 +44,7 @@
       {%- endif -%}
 
 - name: Determine the most appropriate pg_hba.conf name
-  set_fact:
+  ansible.builtin.set_fact:
     _postgresql_replication_pg_hba_conf_filename: >-
       {%- if postgresql_replication_pg_hba_conf_filename is not none -%}
         {{ postgresql_replication_pg_hba_conf_filename }}
@@ -61,7 +61,7 @@
 
 
 - name: Determine the most appropriate postgres data dir path
-  set_fact:
+  ansible.builtin.set_fact:
     _postgresql_replication_data_dir: >-
       {%- if postgresql_replication_data_dir is not none -%}
         {{ postgresql_replication_data_dir }}
@@ -77,7 +77,7 @@
       {%- endif -%}
 
 - name: Set the appropriate .pgpass file location
-  set_fact:
+  ansible.builtin.set_fact:
     _postgresql_replication_pgpass_filename: >-
       {%- if postgresql_replication_pgpass_filename is not none -%}
         {{ postgresql_replication_pgpass_filename }}

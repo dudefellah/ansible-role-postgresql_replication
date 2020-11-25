@@ -13,12 +13,10 @@
         - "{{ role_path }}/vars/main.yml"
 
 - name: Determine appropriate facts for this deployment
-  include_tasks:
-    file: role_facts.yml
+  include_tasks: role_facts.yml
 
 - name: Load platform dependencies
-  include_tasks:
-    file: "{{ tasks_filename }}"
+  include_tasks: "{{ tasks_filename }}"
   vars:
     tasks_files:
       - "{{ role_path }}/tasks/dependencies/\

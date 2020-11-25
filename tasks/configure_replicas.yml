@@ -11,18 +11,18 @@
 #     query: "SELECT * FROM pg_stat_replication WHERE client_addr"
 
 - name: Exit with an error if a primary hasn't been specified for streaming
-  fail:
+  ansible.builtin.fail:
     msg: "No replication primary specified"
   when:
     - "postgresql_replication_primary_address is none"
 
 - name: Retrieve pg user information
-  user:
+  ansible.builtin.user:
     name: "{{ postgresql_replication_postgresql_user }}"
   register: pg_user
 
 - name: Create .pgpass file if it doesn't exist
-  file:
+  ansible.builtin.file:
     path: "{{ _postgresql_replication_pgpass_filename }}"
     mode: "0600"
     owner: "{{ postgresql_replication_postgresql_user }}"
@@ -30,16 +30,15 @@
     access_time: preserve
     modification_time: preserve
 
-#         '*:' +
 - name: Write to pgpass file
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: >-
       {{ (postgresql_replication_primary_address)|string + ':' +
          (
            postgresql_replication_primary_port |
            default('5432')
          )|string + ':' +
-         '*:' +
+         'replication:' +
          (postgresql_replication_replication_user)|string + ':' +
          (postgresql_replication_replication_password)|string }}
     path: "{{ _postgresql_replication_pgpass_filename }}"
@@ -60,7 +59,7 @@
     - "data_dir_find.files|length == 0"
 
 - name: Set recovery.conf
-  template:
+  ansible.builtin.template:
     src: recovery.conf.j2
     dest: "{{ postgresql_replication_data_dir }}/recovery.conf"
     owner: "{{ postgresql_replication_postgresql_user }}"
@@ -70,7 +69,7 @@
     - "postgresql_replication_recovery_conf_enabled|bool"
 
 - name: Remove recovery.conf
-  file:
+  ansible.builtin.file:
     path: "{{ postgresql_replication_data_dir }}/recovery.conf"
     state: absent
   notify: reload postgres
@@ -78,7 +77,7 @@
     - "not postgresql_replication_recovery_conf_enabled|bool"
 
 - name: Set standby.signal file
-  file:
+  ansible.builtin.file:
     path: "{{ postgresql_replication_data_dir }}/standby.signal"
     owner: "{{ postgresql_replication_postgresql_user }}"
     mode: "0640"
