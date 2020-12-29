@@ -1,3 +1,5 @@
+[![pipeline status](https://gitlab.com/dudefellah/ansible-role-postgresql_replication/badges/main/pipeline.svg)](https://gitlab.com/dudefellah/ansible-role-postgresql_replication/-/commits/main)
+
 PostgresSQL Replication
 =========
 
