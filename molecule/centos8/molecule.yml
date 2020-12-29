@@ -11,7 +11,6 @@ platforms:
   - name: postgresql-molecule-centos-8-primary-instance
     image: "centos:centos8"
     pre_build_image: true
-    privileged: true
     docker_networks:
       - name: pg
         ipam_config:
@@ -30,7 +29,6 @@ platforms:
   - name: postgresql-molecule-centos-8-replica-instance
     image: "centos:centos8"
     pre_build_image: true
-    privileged: true
     docker_networks:
       - name: pg
         ipam_config:
