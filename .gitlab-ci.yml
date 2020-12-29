@@ -12,6 +12,7 @@ molecule:
   extends: .ansible_molecule_docker
   tags:
     - docker-socket-runner
+  allow_failure: true
 
 publish:
   stage: publish
