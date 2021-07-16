@@ -22,14 +22,18 @@ Role variables are listed and documented in
 Dependencies
 ------------
 
-No official dependencies. This role should obviously require an existing
-postgresql install though. I have a role available for this
-[here](https://galaxy.ansible.com/dudefellah/postgresql), but you're free
+This role uses the [community.general](https://galaxy.ansible.com/community/general)
+collection. It used to be listed in `meta/requirements.yml` but due to
+ansible-galaxy installation issues, it's been removed. You will need to install
+this prior to using this role.
+
+Before using this role, you will need to have Postgres installed as well.
+I have a role available for thi
+ [here](https://galaxy.ansible.com/dudefellah/postgresql), but you're free
 to install and configure Postgres however you'd prefer.
 
 Example Playbook
 ----------------
-
 
 Once your postgres instances are installed, you will need to set your primary
 server through your host_vars:
