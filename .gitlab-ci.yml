@@ -9,7 +9,7 @@ include:
 
 molecule:
   stage: test
-  extends: .ansible_docker
+  extends: .ansible_molecule
   tags:
     - docker-socket-runner
   allow_failure: true
