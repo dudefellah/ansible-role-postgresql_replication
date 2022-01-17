@@ -40,7 +40,7 @@
     - meta: flush_handlers
 
 - name: Create replication user account
-  community.general.postgresql_user:
+  community.postgresql.postgresql_user:
     name: "{{ postgresql_replication_replication_user }}"
     password: "{{ postgresql_replication_replication_password }}"
     role_attr_flags: replication

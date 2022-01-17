@@ -23,13 +23,14 @@ Dependencies
 ------------
 
 This role uses the [community.general](https://galaxy.ansible.com/community/general)
-collection. It used to be listed in `meta/requirements.yml` but due to
-ansible-galaxy installation issues, it's been removed. You will need to install
-this prior to using this role.
+collection. It also uses [community.postgresql](https://docs.ansible.com/ansible/latest/collections/community/postgresql/index.html)
+for Postgres modules.
+
+You will need to install these collections prior to using this role.
 
 Before using this role, you will need to have Postgres installed as well.
-I have a role available for thi
- [here](https://galaxy.ansible.com/dudefellah/postgresql), but you're free
+I have a role available for this
+[here](https://galaxy.ansible.com/dudefellah/postgresql), but you're free
 to install and configure Postgres however you'd prefer.
 
 Example Playbook
